@@ -94,10 +94,8 @@ public class Knife : MonoBehaviour
 			{
 				triangles.Add(mesh.GetTriangles(i));
 			}
-			Plane cutPlane = new Plane(g.transform.InverseTransformDirection(cutNormal), g.transform.InverseTransformPoint(position));
+			Plane cutPlane = new(g.transform.InverseTransformDirection(cutNormal), g.transform.InverseTransformPoint(position));
 			var t = Task.Run(() => Cutter.AsyncCut(cutPlane,
-				cutNormal,
-
 				originalPos,
 				originalRot,
 				originalScale,
@@ -200,7 +198,7 @@ public class Knife : MonoBehaviour
 			if (!startedCut)
 			{
 				ObjectToCut.Instance.CanMove = true;
-				StartCoroutine(AllowToStartCuttingIn(0.4f));
+				StartCoroutine(AllowToStartCuttingIn(0.2f));
 			}
 			return;
 		}
@@ -288,7 +286,7 @@ public class Knife : MonoBehaviour
 		}
 		result.originalMeshRenderer.materials = mats;
 
-		GameObject right = new GameObject();
+		GameObject right = new();
 		right.transform.SetPositionAndRotation(result.position, result.rotation);
 		right.transform.localScale = result.scale;
 		right.AddComponent<MeshRenderer>();

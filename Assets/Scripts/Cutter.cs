@@ -8,7 +8,6 @@ using UnityEngine;
 
 public class Cutter
 {
-	private static bool isBusy;
 	private static Mesh originalMesh;
 
 
@@ -46,7 +45,7 @@ public class Cutter
 		}
 	}
 
-	public static async Task<TaskResult> AsyncCut(Plane cutPlane, Vector3 cutNormal,
+	public static async Task<TaskResult> AsyncCut(Plane cutPlane,
 		Vector3 originalPosition,
 		Quaternion originalRotation,
 		Vector3 originalScale,
@@ -61,11 +60,6 @@ public class Cutter
 		, GameObject originalObject
 		)
 	{
-
-		if (isBusy)
-		{
-			return null;
-		}
 
 		originalMesh = mesh;
 
@@ -82,7 +76,6 @@ public class Cutter
 		SeparateMeshes(leftMesh, rightMesh, cutPlane, addedVertices, subMeshCount, triangles, ref vertices, ref normals, ref uv);
 		if (addedVertices.Count == 0)
 		{
-			isBusy = false;
 			if (rightMesh.Vertices.Count == 0)
 				return null;
 		}
@@ -90,7 +83,6 @@ public class Cutter
 
 		PrepareMeshForSpiralling(rightMesh, ref vertices, ref normals, ref uv);
 
-		isBusy = false;
 		return new TaskResult(leftMesh, rightMesh, originalPosition, originalRotation, originalScale, materials, originalMeshFilter, originalMeshRenderer, originalObject);
 	}
 
@@ -260,13 +252,15 @@ public class Cutter
 	private static void CutTriangle(Plane plane, MeshTriangle triangle, bool triangleALeftSide, bool triangleBLeftSide, bool triangleCLeftSide,
 	GeneratedMesh leftMesh, GeneratedMesh rightMesh, List<Vector3> addedVertices)
 	{
-		List<bool> leftSide = new List<bool>();
-		leftSide.Add(triangleALeftSide);
-		leftSide.Add(triangleBLeftSide);
-		leftSide.Add(triangleCLeftSide);
+		List<bool> leftSide = new()
+		{
+			triangleALeftSide,
+			triangleBLeftSide,
+			triangleCLeftSide
+		};
 
-		MeshTriangle leftMeshTriangle = new MeshTriangle(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
-		MeshTriangle rightMeshTriangle = new MeshTriangle(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
+		MeshTriangle leftMeshTriangle = new(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
+		MeshTriangle rightMeshTriangle = new(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
 
 		bool left = false;
 		bool right = false;
@@ -321,8 +315,7 @@ public class Cutter
 		}
 
 		float normalizedDistance;
-		float distance;
-		plane.Raycast(new Ray(leftMeshTriangle.Vertices[0], (rightMeshTriangle.Vertices[0] - leftMeshTriangle.Vertices[0]).normalized), out distance);
+		plane.Raycast(new Ray(leftMeshTriangle.Vertices[0], (rightMeshTriangle.Vertices[0] - leftMeshTriangle.Vertices[0]).normalized), out float distance);
 
 		normalizedDistance = distance / (rightMeshTriangle.Vertices[0] - leftMeshTriangle.Vertices[0]).magnitude;
 		Vector3 vertLeft = Vector3.Lerp(leftMeshTriangle.Vertices[0], rightMeshTriangle.Vertices[0], normalizedDistance);
@@ -411,13 +404,15 @@ public class Cutter
 	private static void CutTriangleWithoutMeshChange(Plane plane, MeshTriangle triangle, bool triangleALeftSide, bool triangleBLeftSide, bool triangleCLeftSide,
 	GeneratedMesh leftMesh)
 	{
-		List<bool> leftSide = new List<bool>();
-		leftSide.Add(triangleALeftSide);
-		leftSide.Add(triangleBLeftSide);
-		leftSide.Add(triangleCLeftSide);
+		List<bool> leftSide = new()
+		{
+			triangleALeftSide,
+			triangleBLeftSide,
+			triangleCLeftSide
+		};
 
-		MeshTriangle leftMeshTriangle = new MeshTriangle(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
-		MeshTriangle rightMeshTriangle = new MeshTriangle(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
+		MeshTriangle leftMeshTriangle = new(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
+		MeshTriangle rightMeshTriangle = new(new Vector3[2], new Vector3[2], new Vector2[2], triangle.SubmeshIndex);
 
 		bool left = false;
 		bool right = false;
@@ -472,8 +467,7 @@ public class Cutter
 		}
 
 		float normalizedDistance;
-		float distance;
-		plane.Raycast(new Ray(leftMeshTriangle.Vertices[0], (rightMeshTriangle.Vertices[0] - leftMeshTriangle.Vertices[0]).normalized), out distance);
+		plane.Raycast(new Ray(leftMeshTriangle.Vertices[0], (rightMeshTriangle.Vertices[0] - leftMeshTriangle.Vertices[0]).normalized), out float distance);
 
 		normalizedDistance = distance / (rightMeshTriangle.Vertices[0] - leftMeshTriangle.Vertices[0]).magnitude;
 		Vector3 vertLeft = Vector3.Lerp(leftMeshTriangle.Vertices[0], rightMeshTriangle.Vertices[0], normalizedDistance);
@@ -560,14 +554,8 @@ public class Cutter
 
 	private static void FlipTriangel(MeshTriangle _triangle)
 	{
-		Vector3 temp = _triangle.Vertices[2];
-		_triangle.Vertices[2] = _triangle.Vertices[0];
-		_triangle.Vertices[0] = temp;
-
-		temp = _triangle.Normals[2];
-		_triangle.Normals[2] = _triangle.Normals[0];
-		_triangle.Normals[0] = temp;
-
+		(_triangle.Vertices[0], _triangle.Vertices[2]) = (_triangle.Vertices[2], _triangle.Vertices[0]);
+		(_triangle.Normals[0], _triangle.Normals[2]) = (_triangle.Normals[2], _triangle.Normals[0]);
 		(_triangle.UVs[2], _triangle.UVs[0]) = (_triangle.UVs[0], _triangle.UVs[2]);
 	}
 
@@ -580,13 +568,13 @@ public class Cutter
 			isDone = true;
 			for (int i = 0; i < _addedVertices.Count; i += 2)
 			{
-				if (_addedVertices[i] == _polygone[_polygone.Count - 1] && !_vertices.Contains(_addedVertices[i + 1]))
+				if (_addedVertices[i] == _polygone[^1] && !_vertices.Contains(_addedVertices[i + 1]))
 				{
 					isDone = false;
 					_polygone.Add(_addedVertices[i + 1]);
 					_vertices.Add(_addedVertices[i + 1]);
 				}
-				else if (_addedVertices[i + 1] == _polygone[_polygone.Count - 1] && !_vertices.Contains(_addedVertices[i]))
+				else if (_addedVertices[i + 1] == _polygone[^1] && !_vertices.Contains(_addedVertices[i]))
 				{
 					isDone = false;
 					_polygone.Add(_addedVertices[i]);
@@ -787,7 +775,7 @@ public class Cutter
 			Vector3[] vertices = triangle;
 			Vector3[] normals = { -_plane.normal, -_plane.normal, -_plane.normal };
 			Vector2[] uvs = { Vector2.zero, Vector2.zero, Vector2.zero };
-			MeshTriangle currentTriangle = new MeshTriangle(vertices, normals, uvs, submeshCount + 1);
+			MeshTriangle currentTriangle = new(vertices, normals, uvs, submeshCount + 1);
 
 			if (Vector3.Dot(Vector3.Cross(vertices[1] - vertices[0], vertices[2] - vertices[0]), normals[0]) < 0)
 			{
