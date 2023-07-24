@@ -6,9 +6,10 @@ using UnityEngine;
 
 public class Knife : MonoBehaviour
 {
-	const float baseRadius = 0.25f;
+	[SerializeField] private float baseRadius = 0.1f;
 	const float radiusChangeCoef = 0.1f;
 
+	[SerializeField] private float timeBetweenCuts;
 	[SerializeField] private float speedDown;
 	[SerializeField] private float speedUp;
 	[SerializeField] private Vector3 cutPosition;
@@ -110,11 +111,9 @@ public class Knife : MonoBehaviour
 				mats,
 				g
 			));
-			//var t =( Cutter.Cut(g, transform.position, cutNormal));
 			tasks.Add(t);
 
 		}
-		print("waiting starts");
 		for (int i = 0; i < 50; i++)
 		{
 			print(i);
@@ -130,25 +129,21 @@ public class Knife : MonoBehaviour
 			}
 			if (completed)
 			{
-				print("ended with " + i);
 				EndCuttingObjects();
 				yield break;
 			}
 		}
-		Debug.LogError("it took too long");
 	}
 
 	void EndCuttingObjects()
 	{
 		float minZ = 999999f;
 		float maxZ = -999999f;
-		print("about to end cutting " + objectsToCut.Length);
 		foreach (var t in tasks)
 		{
 			var result = t.Result;
 			if (result is null)
 			{
-				print("continued");
 				continue;
 			}
 			var ob = DealWithTaskResult(result);
@@ -159,7 +154,6 @@ public class Knife : MonoBehaviour
 			{
 				_baseVertices[^1].Add(new Vector3(v.x, v.y, v.z));
 			}
-			//print(_baseVertices[^1].Count + "   " + meshesToBend[^1].vertices.Length);
 			foreach (var p in _baseVertices[^1])
 			{
 				var worldPos = ob.transform.TransformPoint(p);
@@ -168,13 +162,6 @@ public class Knife : MonoBehaviour
 					maxZ = worldPos.z;
 				if (worldPos.z < minZ)
 					minZ = worldPos.z;
-				// 				Plane plane = new Plane();
-				// Vector3 transformedStartingPoint = g.transform.InverseTransformPoint(transform.position);
-				// 		Vector3 transformedNormal = ((Vector3)(g.transform.localToWorldMatrix.transpose * cutNormal)).normalized;
-				// plane.SetNormalAndPosition(
-				// 		transformedNormal, // transformedNormal,
-				// 		transformedStartingPoint);
-				// 		GameObject[] slices = Assets.Scripts.Slicer.Slice(plane, g);
 			}
 		}
 		tasks.Clear();
@@ -198,7 +185,7 @@ public class Knife : MonoBehaviour
 			if (!startedCut)
 			{
 				ObjectToCut.Instance.CanMove = true;
-				StartCoroutine(AllowToStartCuttingIn(0.2f));
+				StartCoroutine(AllowToStartCuttingIn(timeBetweenCuts));
 			}
 			return;
 		}
@@ -210,7 +197,6 @@ public class Knife : MonoBehaviour
 		transform.position += speedUp * Time.deltaTime * Vector3.down;
 		if (transform.position.y <= lowestAllowedKnifePosition)
 		{
-			Debug.LogError("finished cut");
 			startedCut = false;
 			cutting = false;
 			raisingKnife = true;
@@ -275,7 +261,6 @@ public class Knife : MonoBehaviour
 
 	GameObject DealWithTaskResult(Cutter.TaskResult result)
 	{
-
 		var rightMesh = result.rightMesh.GetGeneratedMesh();
 		var leftMesh = result.leftMesh.GetGeneratedMesh();
 		result.originalObject.GetComponent<MeshFilter>().mesh = leftMesh;
@@ -289,14 +274,14 @@ public class Knife : MonoBehaviour
 		GameObject right = new();
 		right.transform.SetPositionAndRotation(result.position, result.rotation);
 		right.transform.localScale = result.scale;
-		right.AddComponent<MeshRenderer>();
+		var rightMeshRenderer = right.AddComponent<MeshRenderer>();
 
 		mats = new Material[rightMesh.subMeshCount];
-		for (int i = 0; i < rightMesh.subMeshCount && i < result.materials.Length; i++)
+		for (int i = 0; i < rightMesh.subMeshCount ; i++)
 		{
-			mats[i] = result.materials[i];
+			mats[i] = result.materials[i%result.materials.Length];
 		}
-		right.GetComponent<MeshRenderer>().materials = mats;
+		rightMeshRenderer.materials = mats;
 		right.AddComponent<MeshFilter>().mesh = rightMesh;
 
 		return right;
@@ -313,7 +298,7 @@ public class Knife : MonoBehaviour
 			y -= 2 * Mathf.PI * initialRadius;
 			initialRadius -= radiusDecrease;
 		}
-		float angle = (y / initialRadius /* 2 * Mathf.PI*/);
+		float angle = (y / initialRadius);
 		var curradius = initialRadius + basePosition.z;
 		result += new Vector3(0, Mathf.Sin(angle) * curradius, Mathf.Cos(angle) * curradius);
 		return result;

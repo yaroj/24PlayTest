@@ -45,7 +45,7 @@ public class Cutter
 		}
 	}
 
-	public static async Task<TaskResult> AsyncCut(Plane cutPlane,
+	public static TaskResult AsyncCut(Plane cutPlane,
 		Vector3 originalPosition,
 		Quaternion originalRotation,
 		Vector3 originalScale,
@@ -606,7 +606,7 @@ public class Cutter
 		return signed_angle;
 	}
 
-	static List<Vector3> RemoveDuplicates(List<Vector3> l)
+	static List< Vector3> RemoveDuplicates(List<Vector3> l)
 	{
 		const int lastBitRemover = (1 << 30) - 2;
 		int IndexOfClosest(Vector3 value)
