@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,11 +25,11 @@ public class Knife : MonoBehaviour
 	private bool raisingKnife;
 	private float _radius;
 	private float _radiusChange;
-	private List<GameObject> objectsToBend = new();
-	private List<Mesh> meshesToBend = new();
-	private List<List<Vector3>> _baseVertices = new();
+	private readonly List<GameObject> objectsToBend = new();
+	private readonly List<Mesh> meshesToBend = new();
+	private readonly List<List<Vector3>> _baseVertices = new();
 
-	private List<Task<Cutter.TaskResult>> tasks = new();
+
 
 	public GameObject[] objectsToCut;
 	public Transform transformToMove;
@@ -53,7 +54,7 @@ public class Knife : MonoBehaviour
 			ObjectToCut.Instance.CanMove = false;
 			startedCut = true;
 			lowestKnifePosition = transform.position.y;
-			StartCoroutine(StartCuttingObjects());
+			StartCuttingObjects();
 
 		}
 		else if (cutting && Input.anyKey)
@@ -72,12 +73,11 @@ public class Knife : MonoBehaviour
 		}
 	}
 
-	IEnumerator StartCuttingObjects()
+	async void StartCuttingObjects()
 	{
-		print("about to start cutting " + objectsToCut.Length);
+		List<Task<Cutter.TaskResult>> tasks = new();
 		foreach (var g in objectsToCut)
 		{
-			print(g);
 			Vector3 position = transform.position;
 			Vector3 originalPos = g.transform.position;
 			Vector3 originalScale = g.transform.localScale;
@@ -114,28 +114,18 @@ public class Knife : MonoBehaviour
 			tasks.Add(t);
 
 		}
-		for (int i = 0; i < 50; i++)
-		{
-			print(i);
-			yield return new WaitForSeconds(0.1f);
-			bool completed = true;
-			foreach (var t in tasks)
-			{
-				if (!t.IsCompleted)
-				{
-					completed = false;
-					break;
-				}
-			}
-			if (completed)
-			{
-				EndCuttingObjects();
-				yield break;
-			}
+		await
+		WaitForEndOfCut(tasks);
 		}
-	}
 
-	void EndCuttingObjects()
+	public async Task WaitForEndOfCut(List<Task<Cutter.TaskResult>> tasks)
+	{
+		await Task.WhenAll(tasks);
+		DealWithCutResult(tasks);
+
+}
+
+	void DealWithCutResult(List<Task<Cutter.TaskResult>> tasks)
 	{
 		float minZ = 999999f;
 		float maxZ = -999999f;
