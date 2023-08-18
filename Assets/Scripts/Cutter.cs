@@ -45,6 +45,7 @@ public class Cutter
 		}
 	}
 
+
 	public static TaskResult AsyncCut(Plane cutPlane,
 		Vector3 originalPosition,
 		Quaternion originalRotation,
@@ -70,6 +71,7 @@ public class Cutter
 
 
 		List<Vector3> addedVertices = new();
+
 		GeneratedMesh leftMesh = new();
 		GeneratedMesh rightMesh = new();
 
@@ -110,7 +112,7 @@ public class Cutter
 				);
 		}
 		return;
-		
+
 	}
 
 
@@ -235,6 +237,20 @@ public class Cutter
 		};
 
 		return new MeshTriangle(verticesToAdd, normalsToAdd, uvsToAdd, _submeshIndex);
+	}
+
+	public struct Edge
+	{
+		public Vector3 A;
+		public Vector3 B;
+		public Vector3 Normal;
+	}
+
+	public struct Vertex
+	{
+		public Vector3 Point;
+		public Edge EdgeA;
+		public Edge EdgeB;
 	}
 
 	/// <summary>
@@ -606,7 +622,7 @@ public class Cutter
 		return signed_angle;
 	}
 
-	static List< Vector3> RemoveDuplicates(List<Vector3> l)
+	static List<Vector3> RemoveDuplicates(List<Vector3> l)
 	{
 		const int lastBitRemover = (1 << 30) - 2;
 		int IndexOfClosest(Vector3 value)
@@ -765,11 +781,133 @@ public class Cutter
 		return triangles;
 	}
 
+	private static List<Vector3> GetTrianglesForPlaneWithHoles(List<Edge> edges)
+	{
+		var graphs = new List<List<Edge>>();
+		while (edges.Count > 0)
+		{
+			var g = new List<Edge>();
+			var currentlyUsedOnes = new HashSet<Edge>();
+			g.Add(edges[0]);
+			var curVertex = edges[0].A;
+			while(curVertex != g[0].A)
+			foreach(var edge in edges)
+			{
+				if (edge.A != curVertex && edge.B != curVertex || currentlyUsedOnes.Contains(edge))
+				{
+					continue;
+				}
+
+			}
+
+
+			graphs.Add(g);
+		}
+		return new List<Vector3>();
+	}
+
+	private static List<Vector3[]> GetTringlesForPlane(List<Vector3> _vertices, Plane _plane, List<Edge> edges)
+	{
+		int[] previousFree = new int[_vertices.Count];
+		int[] nextFree = new int[_vertices.Count];
+		bool[] used = new bool[_vertices.Count];
+		float totalAngle = 0;
+
+
+		bool IsTherePointInsideTriangle(int Apoint, int Bpoint, int Cpoint, Vector3 normal)
+		{
+			for (int i = 0; i < _vertices.Count; i++)
+			{
+				if (i != Apoint && i != Bpoint && i != Cpoint &&
+				PointInsideTriangle(_vertices[i], _vertices[Apoint], _vertices[Bpoint], _vertices[Cpoint], normal)
+				)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		int GetNext(int current)
+		{
+			return (current + 1) % _vertices.Count;
+		}
+
+		int GetPrev(int current)
+		{
+			return (current - 1 + _vertices.Count) % _vertices.Count;
+		}
+
+		int GetPrevFree(int current)
+		{
+			if (used[previousFree[current]])
+			{
+				previousFree[current] = GetPrevFree(previousFree[current]);
+			}
+			return previousFree[current];
+		}
+
+		int GetNextFree(int current)
+		{
+			if (used[nextFree[current]])
+			{
+				nextFree[current] = GetNextFree(nextFree[current]);
+			}
+			return nextFree[current];
+		}
+
+		_vertices = RemoveDuplicates(_vertices);
+
+		for (int i = 0; i < _vertices.Count; i++)
+		{
+			int nextIndex = GetNext(i);
+			int prevIndex = GetPrev(i);
+			previousFree[i] = prevIndex;
+			nextFree[i] = nextIndex;
+			var prev = _vertices[prevIndex];
+			var cur = _vertices[i];
+			var next = _vertices[nextIndex];
+			var angle = SignedAngleBetween(next - cur, cur - prev, _plane.normal);
+			totalAngle += angle;
+		}
+
+		Vector3 normal = _plane.normal;
+		Vector2[] tempoUVS = { Vector2.zero, Vector2.zero, Vector2.zero };
+
+		List<Vector3[]> triangles = new();
+
+		while (triangles.Count < _vertices.Count - 2)
+		{
+			int triCount = triangles.Count;
+			for (int i = 0; i < _vertices.Count; i++)
+			{
+				if (used[i])
+					continue;
+				var cur = _vertices[i];
+				int prevIndex = GetPrevFree(i);
+				var prev = _vertices[prevIndex];
+				int nextIndex = GetNextFree(i);
+				var next = _vertices[nextIndex];
+				if (SignedAngleBetween(next - cur, cur - prev, normal) * totalAngle > 0)
+				{
+					if (!IsTherePointInsideTriangle(i, prevIndex, nextIndex, normal))
+					{
+						triangles.Add(
+							new Vector3[] { prev, cur, next });
+						used[i] = true;
+					}
+				}
+
+			}
+			if (triCount == triangles.Count)
+				break;
+		}
+		return triangles;
+	}
+
 	private static void Fill(List<Vector3> _vertices, Plane _plane, GeneratedMesh _leftMesh, GeneratedMesh _rightMesh, int submeshCount)
 	{
-		var sw = Stopwatch.StartNew();
 		var triangles = GetTringlesForPlane(_vertices, _plane);
-		UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
 		foreach (var triangle in triangles)
 		{
 			Vector3[] vertices = triangle;
