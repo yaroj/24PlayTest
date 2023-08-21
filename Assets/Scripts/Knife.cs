@@ -11,9 +11,7 @@ public class Knife : MonoBehaviour
 	const float radiusChangeCoef = 0.1f;
 
 	[SerializeField] private float timeBetweenCuts;
-	[SerializeField] private float speedDown;
 	[SerializeField] private float speedUp;
-	[SerializeField] private Vector3 cutPosition;
 	[SerializeField] private Vector3 cutNormal;
 	[SerializeField] private float topPosition;
 	[SerializeField] private float lowestAllowedKnifePosition;
@@ -75,7 +73,7 @@ public class Knife : MonoBehaviour
 
 	async void StartCuttingObjects()
 	{
-		List<Task<Cutter.TaskResult>> tasks = new();
+		List<Task<TaskResult>> tasks = new();
 		foreach (var g in objectsToCut)
 		{
 			Vector3 position = transform.position;
@@ -118,14 +116,14 @@ public class Knife : MonoBehaviour
 		WaitForEndOfCut(tasks);
 		}
 
-	public async Task WaitForEndOfCut(List<Task<Cutter.TaskResult>> tasks)
+	public async Task WaitForEndOfCut(List<Task<TaskResult>> tasks)
 	{
 		await Task.WhenAll(tasks);
 		DealWithCutResult(tasks);
 
 }
 
-	void DealWithCutResult(List<Task<Cutter.TaskResult>> tasks)
+	void DealWithCutResult(List<Task<TaskResult>> tasks)
 	{
 		float minZ = 999999f;
 		float maxZ = -999999f;
@@ -249,7 +247,7 @@ public class Knife : MonoBehaviour
 	}
 
 
-	GameObject DealWithTaskResult(Cutter.TaskResult result)
+	GameObject DealWithTaskResult(TaskResult result)
 	{
 		var rightMesh = result.rightMesh.GetGeneratedMesh();
 		var leftMesh = result.leftMesh.GetGeneratedMesh();

@@ -62,6 +62,7 @@
     <Compile Include="Assets\Scripts\MeshTriangle.cs" />
     <Compile Include="Assets\Scripts\GeneratedMesh.cs" />
     <Compile Include="Assets\Scripts\Knife.cs" />
+    <Compile Include="Assets\Scripts\TaskResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\JMO Assets\Toony Colors Pro\Shader Templates 2\SG2_Template_URP.txt" />
