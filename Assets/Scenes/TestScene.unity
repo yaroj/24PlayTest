@@ -358,33 +358,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e59cfbd75ea948e45966838f29195b22, type: 3}
---- !u!1 &356606470050942239 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1183973985763429062, guid: e59cfbd75ea948e45966838f29195b22, type: 3}
-  m_PrefabInstance: {fileID: 356606470050942238}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &356606470050942240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 356606470050942239}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e3da67e2d8bdc2643aa5448476376e4c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseRadius: 0.1
-  timeBetweenCuts: 0.1
-  speedDown: 0.6
-  speedUp: 1
-  cutPosition: {x: 0, y: 0, z: 0}
-  cutNormal: {x: 0, y: 0, z: 1}
-  topPosition: 1.8
-  lowestAllowedKnifePosition: 0
-  objectsToCut: []
-  transformToMove: {fileID: 0}
 --- !u!1001 &517514465665564503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -442,46 +415,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6791f40435451cd4c858e0162659886c, type: 3}
---- !u!1 &517514465665564504 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3899621464511869672, guid: 6791f40435451cd4c858e0162659886c, type: 3}
-  m_PrefabInstance: {fileID: 517514465665564503}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &517514465665564505
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 517514465665564504}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f56fd0e2a4b48814092b248437d257bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cuttableObjects:
-  - {fileID: 517514465665564504}
-  - {fileID: 517514465665564508}
-  - {fileID: 517514465665564507}
-  - {fileID: 517514465665564506}
-  speed: 1
-  distanceAfterObjectPassToRestart: 0.4
-  CanMove: 1
---- !u!1 &517514465665564506 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5729269522653824654, guid: 6791f40435451cd4c858e0162659886c, type: 3}
-  m_PrefabInstance: {fileID: 517514465665564503}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &517514465665564507 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4901462749313276245, guid: 6791f40435451cd4c858e0162659886c, type: 3}
-  m_PrefabInstance: {fileID: 517514465665564503}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &517514465665564508 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1138682725914309126, guid: 6791f40435451cd4c858e0162659886c, type: 3}
-  m_PrefabInstance: {fileID: 517514465665564503}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2826096376301900778
 PrefabInstance:
   m_ObjectHideFlags: 0
