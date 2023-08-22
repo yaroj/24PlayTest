@@ -47,10 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseRadius: 0.1
-  timeBetweenCuts: 0.1
-  speedDown: 0.6
+  timeBetweenCuts: 0.12
   speedUp: 1
-  cutPosition: {x: 0, y: 0, z: 0}
   cutNormal: {x: 0, y: 0, z: 1}
   topPosition: 1.8
   lowestAllowedKnifePosition: 0
