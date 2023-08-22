@@ -308,6 +308,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 356606470050942240, guid: e59cfbd75ea948e45966838f29195b22, type: 3}
+      propertyPath: timeBetweenCuts
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 1183973985763429062, guid: e59cfbd75ea948e45966838f29195b22, type: 3}
       propertyPath: m_Name
       value: Knife1

@@ -47,23 +47,26 @@ public class Knife : MonoBehaviour
 			MoveUp();
 			return;
 		}
-		if (!(startedCut || cutting) && Input.anyKeyDown)
+		if (Input.anyKey)
 		{
-			ObjectToCut.Instance.CanMove = false;
-			startedCut = true;
-			lowestKnifePosition = transform.position.y;
-			StartCuttingObjects();
-
-		}
-		else if (cutting && Input.anyKey)
-		{
-			if (transform.position.y < lowestKnifePosition)
+			if (!(startedCut || cutting))
 			{
+				ObjectToCut.Instance.CanMove = false;
+				startedCut = true;
 				lowestKnifePosition = transform.position.y;
-				StartRolling();
-			}
-			MoveDown();
+				StartCuttingObjects();
 
+			}
+			else
+			{
+				if (transform.position.y < lowestKnifePosition)
+				{
+					lowestKnifePosition = transform.position.y;
+					StartRolling();
+				}
+				MoveDown();
+
+			}
 		}
 		else
 		{
